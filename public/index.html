@@ -4,13 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <title>Push notification</title>
   </head>
   <body>
+    <div class="topbar">
+      <h1>Push notification</h1>
+    </div>
     <div class="main-container">
-      <button type="button" id="subscribe" class="button">Следить за изменениями</button>
-      <button type="button" id="send-message" class="button">Отправить сообщение</button>
+      <button type="button" id="subscribe">Enable notifications</button>
+      <div class="form-container">
+        <h2>Create message</h2>
+        <form id="form">
+          <input type="text" name="title" placeholder="Title">
+          <textarea name="text" placeholder="Text"></textarea>
+          <input type="text" name="icon" placeholder="Icon URL">
+          <input type="text" name="click_action" placeholder="Click action URL">
+          <div class="btn-container">
+            <button type="submit">Send message</button>
+          </div>
+        </form>
+      </div>
     </div>
     <script src="//www.gstatic.com/firebasejs/3.6.8/firebase.js"></script>
     <script src="firebase_subscribe.js"></script>
