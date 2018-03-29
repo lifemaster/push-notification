@@ -13,14 +13,31 @@
       <h1>Push notification</h1>
     </div>
     <div class="main-container">
-      <button type="button" id="subscribe">Enable notifications</button>
-      <div class="form-container">
+      <button type="button" id="subscribe" class="enable-notification-btn">Enable notifications</button>
+      <div id="form-container" class="form-container">
         <h2>Create message</h2>
         <form id="form">
-          <input type="text" name="title" placeholder="Title">
-          <textarea name="text" placeholder="Text"></textarea>
-          <input type="text" name="icon" placeholder="Icon URL">
-          <input type="text" name="click_action" placeholder="Click action URL">
+
+          <div class="form-control">
+            <label for="title">Title:</label>
+            <input id="title" type="text" name="title" value="Ералаш">
+          </div>
+
+          <div class="form-control">
+            <label for="body">Text message:</label>
+            <textarea id="body" name="body">Начало в 21:00</textarea>
+          </div>
+
+          <div class="form-control">
+            <label for="icon">Icon URL:</label>
+            <input id="icon" type="text" name="icon" value="http://eralash.ru.rsz.io/sites/all/themes/eralash_v5/logo.png?width=192&height=192">
+          </div>
+
+          <div class="form-control">
+            <label for="click_action">Click action URL:</label>
+            <input id="click_action" type="text" name="click_action" value="http://eralash.ru/">
+          </div>
+
           <div class="btn-container">
             <button type="submit">Send message</button>
           </div>

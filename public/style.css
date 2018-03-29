@@ -31,6 +31,16 @@ body {
   padding: 20px 10px;
 }
 
+.enable-notification-btn,
+.form-container {
+  display: none;
+}
+
+.enable-notification-btn.visible,
+.form-container.visible {
+  display: block;
+}
+
 .main-container button {
   margin: 10px;
   padding: 10px;
@@ -58,8 +68,18 @@ form {
   flex-direction: column;
 }
 
+.form-control {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+.form-control label {
+  font-weight: bold;
+}
+
 input, textarea {
-  margin: 10px 0;
+  margin-top: 5px;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;

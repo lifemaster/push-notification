@@ -1,51 +1,53 @@
 const subscribeBtn = document.getElementById('subscribe');
-const sendMsgBtn = document.getElementById('send-message');
+const formContainer = document.getElementById('form-container');
+const form = document.getElementById('form');
 
 firebase.initializeApp({
   messagingSenderId: '29128917026'
 });
 
-// браузер поддерживает уведомления
-// вообще, эту проверку должна делать библиотека Firebase, но она этого не делает
 if ('Notification' in window) {
   var messaging = firebase.messaging();
 
-  // Показываем/скрываем кнопки
   messaging.getToken()
-  .then(function (currentToken) {
-    if (currentToken) {
-      subscribeBtn.classList.add('hidden');
-      sendMsgBtn.classList.remove('hidden');
-    } else {
-      console.warn('Не удалось получить токен.');
-      subscribeBtn.classList.remove('hidden');
-      sendMsgBtn.classList.add('hidden');
-    }
-  })
-  .catch(function (err) {
-    console.warn('При получении токена произошла ошибка.', err);
-  });
+    .then(currentToken => {
+      if (currentToken) {
+        // show form and hide "enable notification" button
+        subscribeBtn.classList.remove('visible');
+        formContainer.classList.add('visible');
+      } else {
+        console.warn('Cannot get token');
+        // hide form and show "enable notification" button
+        subscribeBtn.classList.add('visible');
+        formContainer.classList.remove('visible');
+      }
+    })
+    .catch(err => console.warn('An error has occurred while getting token:', err));
 
-  // пользователь уже разрешил получение уведомлений
-  // подписываем на уведомления если ещё не подписали
+  // if user has already allowed to get notifications subscribe to it
   if (Notification.permission === 'granted') {
     subscribe();
   }
 
-  // по клику, запрашиваем у пользователя разрешение на уведомления
-  // и подписываем его
+  // Subscribe to notification when button is clicked
   subscribeBtn.addEventListener('click', function () {
     subscribe();
   });
 
-  // отправка сообщения
-  sendMsgBtn.addEventListener('click', function() {
+  // Send message
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const formObject = e.target.elements;
+
     const notification = {
-      title: 'Title',
-      body: 'Body',
-      icon: 'http://eralash.ru.rsz.io/sites/all/themes/eralash_v5/logo.png?width=192&height=192',
-      click_action: 'http://eralash.ru/'
+      title: formObject.title.value,
+      body: formObject.body.value,
+      icon: formObject.icon.value,
+      click_action: formObject.click_action.value
     };
+
+    console.log('Sending message to server...')
 
     fetch('/push-notification/send', {
       method: 'POST',
@@ -53,19 +55,16 @@ if ('Notification' in window) {
       body: JSON.stringify({notification})
     }).then(response => {
       if (response.status == 200) {
-        return response.json();
+        console.log('Message has been successfully sent');
       } else {
-        console.error('An error has occurred: ', response.statusText);
+        console.error('An error has occurred while sending message: ', response.statusText);
       }
-    }).then(data => {
-      console.log('Message has been successfully sent');
-      console.log(data);
     }).catch(err => {
-
+      console.error('Am error has occurred while sending message to server: ', err);
     });
   });
 
-  // Получение сообщения
+  // Receiving message
   messaging.onMessage(function(payload) {
     console.log('Message received. ', payload);
     new Notification(payload.notification.title, payload.notification);
@@ -73,10 +72,10 @@ if ('Notification' in window) {
 }
 
 function subscribe() {
-  // запрашиваем разрешение на получение уведомлений
+  // request permission to get notifications
   messaging.requestPermission()
     .then(function () {
-      // получаем ID устройства
+      // get device ID
       messaging.getToken()
         .then(function (currentToken) {
           console.log(currentToken);
@@ -84,49 +83,48 @@ function subscribe() {
           if (currentToken) {
             sendTokenToServer(currentToken);
           } else {
-            console.warn('Не удалось получить токен.');
+            console.warn('Cannot get token');
             setTokenSentToServer(false);
           }
         })
         .catch(function (err) {
-          console.warn('При получении токена произошла ошибка.', err);
+          console.warn('An error has occurred while getting token:', err);
           setTokenSentToServer(false);
         });
     })
     .catch(function (err) {
-      console.warn('Не удалось получить разрешение на показ уведомлений.', err);
+      console.warn('Cannot get permission to receive notifications:', err);
     });
 }
 
-// отправка ID на сервер
+// Send device ID to server
 function sendTokenToServer(currentToken) {
   if (!isTokenSentToServer(currentToken)) {
-    console.log('Отправка токена на сервер...');
+    console.log('Sending token to server...');
 
-    var url = '/push-notification/register'; // адрес скрипта на сервере который сохраняет ID устройства
-    fetch(url, {
+    fetch('/push-notification/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: currentToken })
     }).then(response => {
       if (response.status == 200) {
+        console.log('Token has successfully sent');
         return response.json();
       } else {
-        console.error('An error has occurred: ', response.statusText);
+        console.error('An error has occurred while sending token to server: ', response.statusText);
       }
     }).then(data => {
       console.log(data);
-      subscribeBtn.classList.add('hidden');
-      sendMsgBtn.classList.remove('hidden');
+      subscribeBtn.classList.remove('visible');
+      formContainer.classList.add('visible');
       setTokenSentToServer(currentToken);
     });
   } else {
-    console.log('Токен уже отправлен на сервер.');
+    console.log('Token has already sent to server');
   }
 }
 
-// используем localStorage для отметки того,
-// что пользователь уже подписался на уведомления
+// use localStorage to mark that user has already subscribed to messages
 function isTokenSentToServer(currentToken) {
   return window.localStorage.getItem('sentFirebaseMessagingToken') == currentToken;
 }
